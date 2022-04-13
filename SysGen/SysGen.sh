@@ -113,7 +113,7 @@ then
     "source /opt/tools/xilinx/Vitis/2021.2/settings64.sh;
 source /opt/xilinx/xrt/setup.sh;
 
-make all PLATFORM_NAME=xilinx_vck5000_gen3x16_xdma_1_202120_1;">> ./${file_name}/run_sys.sh;
+make all PLATFORM_NAME=xilinx_vck5000_gen3x16_xdma_1_202120_1 Frequency=250;">> ./${file_name}/run_sys.sh;
 chmod +x ./${file_name}/run_sys.sh;
 
 elif [[ "$platform" == "VCK190" ]] || [[ "$platform" == "vck190" ]]
@@ -122,7 +122,7 @@ then
     echo \
     "VIV_VER=2021.1 SDA_VER=2021.1 . with-sdaccel;
 
-make build PLATFORM_NAME=xilinx_vck190_base_202110_1;">> ./${file_name}/run_sys.sh;
+make build PLATFORM_NAME=xilinx_vck190_base_202110_1 Frequency=230;">> ./${file_name}/run_sys.sh;
 chmod +x ./${file_name}/run_sys.sh;
 else 
     echo "Specified platform currently is not supported. Please input VCK5000 or VCK190"
