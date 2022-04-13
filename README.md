@@ -94,27 +94,27 @@ SysGen:1;
 ./AutoGen
 ```
 
-**4. Run on VCK5000**<br>
+**4. Run experiment on VCK5000 and see result in log file**<br>
 ```sh
 source /opt/tools/xilinx/Vitis/2021.2/settings64.sh
 source /opt/xilinx/xrt/setup.sh
-cd ${project_path}
-./hostexe mm_hw.xclbin
+cd ${SYS_PRO_PATH}
+./hostexe mm_hw.xclbin >> result.log
 ```
 
 
 **It takes 6-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TFLOPs**
 
 ## Experiment customization<br>
-**1.Throuput Experiment**
-To reproduce the other experiment results, one can simply change the number of X, Y, Z and T_Z will be automatical generated. We listed our settings below. Users can use XACG in the same way as mentioned in demo section.
+**1.System level Throuput Experiment**<br>
+To reproduce the other experiment results, one can simply change the number of X, Y, Z and T_Z will be automatical generated. We listed our settings below. Users can use XACG in the same way as mentioned in demo section.<br>
 - Case 1 : 1536 × 1024 × 256 × 320 -> X=4, Y=4, Z=2, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
 - Case 2 : 1536 × 2048 × 128 × 200 -> X=4, Y=8, Z=1, T_Z=200, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
 - Case 3 :  768 × 1280 × 384 × 320 -> X=2, Y=5, Z=3, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,1,0]
 - Case 4 :  768 × 1792 × 256 × 320 -> X=2, Y=7, Z=2, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,1,0]
 - Case 5 : 1536 × 1792 × 128 × 200 -> X=4, Y=7, Z=1, T_Z=200, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
 
-**2. Resource utilization and timig report**
+**2. Resource utilization and timig report**<br>
 1. For VCK5000
 ```sh
 cd SysGen/script_VCK5000
@@ -128,3 +128,49 @@ cd SysGen/script_VCK190
 ./hw_parse.sh 
 ./time_parse.sh
 ```
+**3. Single Kernel Effciency**<br>
+In this section, users can launch the KernelGen independently by assigning Sys_Gen and IO_Gen to 0. We prepared the input and golden data of the data point listed in Table II and III for correctness verification. In the rest of this section, we will use int32 MM kernel 0 with size 32*32*32 as an example to showcase how to verify correctness and efficiency of a single kernel. <br>
+
+![image](https://user-images.githubusercontent.com/77606152/163168070-3ba8aabd-d11a-4bf8-bea9-6d0fece59b03.png)<br>
+
+1. **Modify input.cfg file**<br>
+```sh
+Platform:VCK190;
+KernelGen:1;
+	DATA_TYPE:int32;
+	KRL_TYPE:0;
+	I:32;
+	K:32;
+	J:32;
+IOGen:0;
+	DATA_TYPE:any;
+	A:any;
+	B:any;
+	C:any;
+SysGen:0;
+	DATA_TYPE:any;
+	X:any;
+	Y:any;
+	Z:any;
+	LHS_BUFF:any;
+	RHS_BUFF:any;
+	OUT_BUFF:any;
+```
+
+2. **Lauch KernelGen**<br>
+```sh
+either cd KernelGen; ./KernelGen.sh;
+or ./AutoGen.sh
+```
+
+3. Verify Correctness(Provide golden output file for design points listed in TABLE II and III)<br>
+
+4. Verify Single kernel Efficiency. <br>
+```sh
+VIV_VER=2021.1 SDA_VER=2021.1 . with-sdaccel   #VCK190 Environment
+cd ${KEL_PRO_PATH}
+vitis_analyzer aiesimulator_output/default.aierun_summary
+```
+After open the GUI of vitis_analyzer, we mark the start time and stop time of mm_kernel0 as shown in the following picture. The total elapsed cycle can be calculated as 5483-1154=4329 cycles. For int32 data type, it can calucalte 8 MACs/cyc. The theoretical execution cycle should be 32*32*32/8=4096 cycles. Thus the efficiency can be calculated as EFF = 4096/4329 ≈ 94.6%. Note that, there are small number of cycles variation during different launch of a single kernel thus lead to small changes in efficiency.<br>
+
+![image](https://user-images.githubusercontent.com/77606152/163170434-57931308-0601-48e0-862a-3fcaccebc567.png)<br>
