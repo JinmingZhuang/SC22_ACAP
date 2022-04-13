@@ -24,6 +24,20 @@ do
 		unset IFS
 		IFS=';' read -ra Value <<< "$value_temp";
 		IO_Gen="${Value[0]}";
+	elif (( ${n} == 10 ))
+	then
+		IFS=':' read -ra Key <<< "$line";
+		value_temp="${Key[1]}"; 
+		unset IFS
+		IFS=';' read -ra Value <<< "$value_temp";
+		row_num="${Value[0]}";
+	elif (( ${n} == 12 ))
+	then
+		IFS=':' read -ra Key <<< "$line";
+		value_temp="${Key[1]}"; 
+		unset IFS
+		IFS=';' read -ra Value <<< "$value_temp";
+		col_num="${Value[0]}";
 	elif (( ${n} == 13 ))
 	then
 		IFS=':' read -ra Key <<< "$line";
@@ -92,10 +106,17 @@ then
 	cd ..;
 	if (( ${IO_Gen} == 1 ))
 	then
-		cd ./IOGen;
-		./IOGen.sh;
-		if (( ${Sys_Gen} == 1 ))
+		if (( ${Sys_Gen} == 0 ))
 		then
+			cd ./IOGen;
+			./IOGen.sh;
+			cd ./${data_type}_${row_num}_8_${col_num}_${platform};
+			./run_aie.sh;
+			cd ..;
+		elif (( ${Sys_Gen} == 1 ))
+		then
+			cd ./IOGen;
+			./IOGen.sh;
 			cd ./${data_type}_12_8_4_${platform};
 			./run_aie.sh;
 			cd ../../SysGen;
