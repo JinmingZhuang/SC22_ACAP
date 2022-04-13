@@ -65,6 +65,7 @@ After getting the parameters, four simple steps are needed to reproduce the resu
 **1. Download Repo**<br>
 ```sh
 git clone https://github.com/JinmingZhuang/SC22_ACAP.git
+cd SC22_ACAP
 git checkout master
 ```
 **2. Modify input.cfg file**<br>
