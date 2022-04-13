@@ -12,7 +12,7 @@
 ![XACG](https://user-images.githubusercontent.com/77606152/163127636-76361ad2-8057-4f91-9211-cfd0b2c13c8b.png)<br>
 
 ## Configuration File 
-In the following configuration file, users  can specify platform, data type, kernel type and mapping strategy of each level. The feasible option of each parameter are illustrated in **( )** The rules of using this configuration file are listed below:
+In the following configuration file, users can specify platform, data type, kernel type and mapping strategy of each level. The feasible option of each parameter are illustrated in **( )** The rules of using this configuration file are listed below:
 - **Platform** refers to the hardware platform used in the project. VCK5000 and VCK190 are supported in the current framework.
 - **KernelGen, IOGen, SysGen** decide if the corresponding ACG should be launched (1 refers to launch). According  to the framework overview, the upper level ACGs are based on the lower level ACGs. Thus, lower level ACG parameter should be 1 when launching the upper level ACGs.([KernelGen, IOGen, SysGen]=[1,0,0] | [1,1,0] | [1,1,1]). When launch control parameter=0, the following parameters in its scope won't work thus can be random number.
 - When multiple launch control parameter are assigned to 1, **DATA_TYPE** should be kept the same;
@@ -43,20 +43,88 @@ SysGen:0;                 #(0 | 1) scope 3
 	OUT_BUFF:1;      
 ```
 
-## Experiment settings<br>
-1. The file name ${b}port/${a}bits_${b}p refers to ${b} AXI ports each with ${a} bits are accessing DDR at the same time. <br>
-2. The "burst_length" and "outstanding number" can be viewed in ${b}port/${a}bits_${b}p/src/krnl_vckbench.cpp.<br> 
-3. The data allocation manner in DDR is in ${b}port/${a}bits_${b}p/src/host.cpp line 73-77.<br>
-## Run make file in Vitis Flow<br>
-1.Set Cross Compile Environment
+## Experiment Environment<br>
+Following environments are automatically set when launch each ACGs. The detail can be viewed in run.aie.sh or run.sys.sh after generating the corresponding code. <br>
+1. VCK5000: Vitis 2021.2, XRT 2021.2 <br>
 ```sh
-source ${PATH}/environment-setup-cortexa72-cortexa53-xilinx-linux
+source /opt/tools/xilinx/Vitis/2021.2/settings64.sh
+source /opt/xilinx/xrt/setup.sh
 ```
-2.Set Vitis 2021.1 Environment
+2. VCK190: Vitis 2021.1 <br>
 ```sh
-source /opt/tools/xilinx/Vitis/2021.1/settings64.sh
+VIV_VER=2021.1 SDA_VER=2021.1 . with-sdaccel
 ```
-3.Create Project
+
+## Demo<br>
+In this section, we take fp32 datatype of case 2 as an exmple to demonstrate how our framework works. In our experiment, we specify the single kernel computation as 32x32x32 and tiling factor of A, B and C to 12, 8, 4 respectively. All the different size listed in Table VI are the result of different X, Y, Z and T_Z. X, Y, Z are specified in **input.cfg** file, whereas T_Z is configured in /host/host.cpp. Thus for case 2 the corrsponded number of X, Y, Z and T_Z are shown bellow. To reproduce our experiment result, one can simply change the number of X, Y, Z since T_Z will be automatical generated.<br>
+- Case 2 : 1536 × 2048 × 128 × 200 -> X=4, Y=8, Z=1, T_Z=200<br>
+
+![image](https://user-images.githubusercontent.com/77606152/163144535-3d8dd67e-21da-4d1b-a0ac-4600cfbd9e5f.png)<br>
+
+After getting the parameters, four simple steps are needed to reproduce the results.<br>
+**1. Download Repo**<br>
 ```sh
-make all TARGET=hw PLATFORM=${PATH}/xilinx_vck190_base_202110_1/xilinx_vck190_base_202110_1.xpfm EDGE_COMMON_SW=${PATH}/xilinx-versal-common-v2021.1 SYSROOT=${PATH}/sysroots/cortexa72-cortexa53-xilinx-linux
+git clone https://github.com/JinmingZhuang/SC22_ACAP.git
+```
+**2. Modify input.cfg file**<br>
+```sh
+Platform:VCK5000;
+KernelGen:1;
+	DATA_TYPE:fp32;
+	KRL_TYPE:1;
+	I:32;
+	K:32;
+	J:32;
+IOGen:1;
+	DATA_TYPE:fp32;
+	A:12;
+	B:8;
+	C:4;
+SysGen:1;
+	DATA_TYPE:fp32;
+	X:4;
+	Y:8;
+	Z:1;
+	LHS_BUFF:1;
+	RHS_BUFF:0;
+	OUT_BUFF:1;
+```
+**3. Launch XACG**<br>
+```sh
+./AutoGen
+```
+
+**4. Run on VCK5000**<br>
+```sh
+source /opt/tools/xilinx/Vitis/2021.2/settings64.sh
+source /opt/xilinx/xrt/setup.sh
+cd ${project_path}
+./hostexe mm_hw.xclbin
+```
+
+
+**It takes 6-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TFLOPs**
+
+## Experiment customization<br>
+**1.Throuput Experiment**
+To reproduce the other experiment results, one can simply change the number of X, Y, Z and T_Z will be automatical generated. We listed our settings below. Users can use XACG in the same way as mentioned in demo section.
+- Case 1 : 1536 × 1024 × 256 × 320 -> X=4, Y=4, Z=2, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
+- Case 2 : 1536 × 2048 × 128 × 200 -> X=4, Y=8, Z=1, T_Z=200, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
+- Case 3 :  768 × 1280 × 384 × 320 -> X=2, Y=5, Z=3, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,1,0]
+- Case 4 :  768 × 1792 × 256 × 320 -> X=2, Y=7, Z=2, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,1,0]
+- Case 5 : 1536 × 1792 × 128 × 200 -> X=4, Y=7, Z=1, T_Z=200, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
+
+**2. Resource utilization and timig report**
+1. For VCK5000
+```sh
+cd SysGen/script_VCK5000
+./hw_parse.sh 
+./time_parse.sh
+```
+
+2. For VCK190
+```sh
+cd SysGen/script_VCK190
+./hw_parse.sh 
+./time_parse.sh
 ```
