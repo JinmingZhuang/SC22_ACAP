@@ -131,7 +131,7 @@ cd SysGen/script_VCK190
 **3. Single Kernel Effciency**<br>
 In this section, users can launch the KernelGen independently by assigning Sys_Gen and IO_Gen to 0. We prepared the input and golden data of the data point listed in Table II and III for correctness verification. In the rest of this section, we will use int32 MM kernel 0 with size 32*32*32 as an example to showcase how to verify correctness and efficiency of a single kernel. <br>
 
-![image](https://user-images.githubusercontent.com/77606152/163168070-3ba8aabd-d11a-4bf8-bea9-6d0fece59b03.png)<br>
+![image](https://user-images.githubusercontent.com/77606152/163173087-bd8604f9-d069-47a1-8a9c-0c0845e410ce.png)<br>
 
 1. **Modify input.cfg file**<br>
 ```sh
@@ -173,4 +173,4 @@ vitis_analyzer aiesimulator_output/default.aierun_summary
 ```
 After open the GUI of vitis_analyzer, we mark the start time and stop time of mm_kernel0 as shown in the following picture. The total elapsed cycle can be calculated as 5483-1154=4329 cycles. For int32 data type, it can calucalte 8 MACs/cyc. The theoretical execution cycle should be 32*32*32/8=4096 cycles. Thus the efficiency can be calculated as EFF = 4096/4329 ≈ 94.6%. Note that, there are small number of cycles variation during different launch of a single kernel thus lead to small changes in efficiency.<br>
 
-![image](https://user-images.githubusercontent.com/77606152/163170434-57931308-0601-48e0-862a-3fcaccebc567.png)<br>
+![image](https://user-images.githubusercontent.com/77606152/163173178-0ac63bb5-fc3e-43b5-9ec1-90f2fda5c764.png)<br>
