@@ -93,7 +93,7 @@ SysGen:1;
 ```
 **3. Launch XACG**<br>
 ```sh
-./AutoGen
+./AutoGen.sh
 ```
 
 **4. Run experiment on VCK5000 and see result in log file**<br>
