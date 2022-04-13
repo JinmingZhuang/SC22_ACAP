@@ -2217,6 +2217,16 @@ int main(int argc, char** argv) {
 
 fi
 
+if [ "$sim_name" == "int32_32_32_32" ] || [ "$sim_name" == "int32_16_32_32" ] || [ "$sim_name" == "int32_16_16_32" ] || [ "$sim_name" == "int32_8_16_32" ] || [ "$sim_name" == "int32_8_8_32" ] || [ "$sim_name" == "int32_8_8_16" ] || [ "$sim_name" == "int32_8_8_8" ] || [ "$sim_name" == "int16_48_48_48" ] || [ "$sim_name" == "int16_32_48_48" ] || [ "$sim_name" == "int16_32_32_48" ] || [ "$sim_name" == "int16_16_32_48" ] || [ "$sim_name" == "int16_16_16_48" ] || [ "$sim_name" == "int16_16_16_32" ] || [ "$sim_name" == "int16_16_16_8" ]
+then
+	if (( ${IO_Gen} == 0 )) || (( ${Sys_Gen} == 0 ))
+	then
+		cd ${dir_name};
+		./run_aie.sh;
+		cd ..;
+	fi
+fi
+
 echo "
 Project $dir_name created successfully!
 		";
