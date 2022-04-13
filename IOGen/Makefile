@@ -15,6 +15,7 @@ mkfile_dir := $(dir $(mkfile_path))
 TARGET   = hw
 MODE	 = linux
 HOST_ARCH = x86
+Frequency = 250
 PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 PLATFORM_NAME=xilinx_vck5000_gen3x16_xdma_1_202120_1 #xilinx_vck190_base_202110_1
 PLATFORM = ${PLATFORM_REPO_PATHS}/${PLATFORM_NAME}/${PLATFORM_NAME}.xpfm
@@ -80,7 +81,7 @@ ifneq ($(TARGET), hw)
 endif
 CLFLAGS += --hls.jobs 8
 CLFLAGS += --config ./conn.cfg 
-CLFLAGS += --kernel_frequency 250
+CLFLAGS += --kernel_frequency ${Frequency}
 
 LDCLFLAGS := --vivado.synth.jobs 8 --vivado.impl.jobs 8
 
