@@ -70,9 +70,9 @@ git clone https://github.com/JinmingZhuang/SC22_ACAP.git
 cd SC22_ACAP
 git checkout master
 ```
-**2. Configure ".cfg" file**<br>
-Use pre-defined file config_files/1536_2048_128_200.cfg as input in this demo <br>
-sh```
+**2. ".cfg" file configuration**<br>
+We use pre-defined file config_files/1536_2048_128_200.cfg as input in this demo <br>
+```sh
 Platform:VCK5000;
 KernelGen:1;
 	DATA_TYPE:int32;
@@ -101,26 +101,26 @@ XACG takes ".cfg" as input file. In order to reproduce the experiment results, w
 ```sh
 ./AutoGen.sh config_files/1536_2048_128_200.cfg
 ```
-**4. Compilation of Single Kernel, AIE Array and System**<br>
-1. KernelGen leverages AIE compiler as its banckend<br>
+**4. Compilation flow of Single Kernel, AIE Array and System**<br>
+1. KernelGen leverages AIE compiler as its banckend ( **3-5 min** )<br>
 ```sh
 cd KernelGen/${PRO_PATH}
 ./run_aie.sh
 ```
 
-2. IOGen leverages AIE compiler as its banckend<br>
+2. IOGen leverages AIE compiler as its banckend ( **30-60 min** )<br>
 ```sh
 cd IOGen/${PRO_PATH}
 ./run_aie.sh
 ```
 
-3. SysGen leverages Vitis and Vivado as its banckend<br>
+3. SysGen leverages Vitis and Vivado as its banckend ( **3-7 hours** )<br>
 ```sh
 cd SysGen/${PRO_PATH}
 ./run_sys.sh
 ```
 
-4. On board execution<br>
+4. On board execution ( **3-5 min** )<br><br>
 By running the following instructions, user can view throughput and computation result in result.log.
 ```sh
 source /opt/tools/xilinx/Vitis/2021.2/settings64.sh
@@ -128,12 +128,14 @@ source /opt/xilinx/xrt/setup.sh
 cd SysGen/${PRO_PATH}
 ./hostexe mm_hw.xclbin >> result.log
 ```
-**It takes 4-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TOPs as shown in the following figure**
+
+**5. Expected demo result**<br>
+It takes 4-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TOPs as shown in the following figure.<br>
 ![image](https://user-images.githubusercontent.com/77606152/163298008-bb67c852-861f-4c87-800e-5328b789a3d3.png)<br>
 
 ## Experiment customization<br>
 **1.System level Throuput Experiment**<br>
-To reproduce the other experiment results, one can simply change the number of X, Y, Z and T_Z will be automatical generated. We listed our settings below. Users can use XACG in the same way as mentioned in demo section.<br>
+To reproduce the other experiment results, one can simply change the number of X, Y, Z and T_Z will be automatical generated. We listed our settings below. Users can use XACG in the same way as mentioned in demo section. The configuration file for these five design point of int32 data type on VCK5000 are prepared in config_files<br>
 - Case 1 : 1536 × 1024 × 256 × 320 -> X=4, Y=4, Z=2, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
 - Case 2 : 1536 × 2048 × 128 × 200 -> X=4, Y=8, Z=1, T_Z=200, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,0,1]
 - Case 3 :  768 × 1280 × 384 × 320 -> X=2, Y=5, Z=3, T_Z=320, [LHS_BUFF,RHS_BUFF,OUT_BUFF]=[1,1,0]
@@ -155,7 +157,7 @@ cd SysGen/script_VCK190
 ./time_parse.sh
 ```
 **3. Single Kernel Effciency**<br>
-In this section, users can launch the KernelGen independently by assigning Sys_Gen and IO_Gen to 0. We prepared the input and golden data of the data point listed in Table II and III for correctness verification. In the rest of this section, we will use int32 MM kernel 0 with size 32*32*32 as an example to showcase how to verify correctness and efficiency of a single kernel. <br>
+In this section, users can launch the KernelGen independently by assigning Sys_Gen and IO_Gen to 0. In the rest of this section, we will use int32 MM kernel 0 with size 32*32*32 as an example to showcase how to verify the efficiency of a single kernel. <br>
 
 ![image](https://user-images.githubusercontent.com/77606152/163173087-bd8604f9-d069-47a1-8a9c-0c0845e410ce.png)<br>
 
@@ -183,15 +185,18 @@ SysGen:0;
 	OUT_BUFF:any;
 ```
 
-2. **Lauch KernelGen**<br>
+2. **Launch KernelGen**<br>
 ```sh
 either cd KernelGen; ./KernelGen.sh;
 or ./AutoGen.sh
 ```
+3. **Compilation and Simulation**
+```sh
+cd KernelGen/${PRO_PATH}
+./run_aie.sh
+```
 
-3. Verify Correctness(Provide golden output file for design points listed in TABLE II and III)<br>
-
-4. Verify Single kernel Efficiency. <br>
+4. **Verify Single kernel Efficiency** <br>
 ```sh
 VIV_VER=2021.1 SDA_VER=2021.1 . with-sdaccel   #VCK190 Environment
 cd ${KEL_PRO_PATH}
