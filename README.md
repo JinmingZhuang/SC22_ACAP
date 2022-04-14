@@ -8,7 +8,7 @@
 **XACG-IOGen:** Based on the single kernel created by XACG-KernelGen, XACG-IOGen is launched to generate new ADF graph code that defines how packet-switch streams are connected to AIE array which contains 400 AIEs. Single kernel calculating 32x32x32 MM with int32 and fp32 data type is supported to scale out to the AIE array. <br>
 
 **XACG-SysGen:** Based on the AIE array created by XACG-IOGen, XACG-SysGen is launched to generate PL streams, scheduling controller modules to communicate with AIE array and PL on-chip buffers, off-chip AXI data transfer modules to communicate with DDR. Differnet system level designs varying in on-chip buffer size and its implementation option (BRAM or URAM) for int32 and fp32 data type are supported.<br>
-
+<br>
 ![XACG](https://user-images.githubusercontent.com/77606152/163127636-76361ad2-8057-4f91-9211-cfd0b2c13c8b.png)<br>
 
 ## Configuration File "./config_files/input.cfg"
@@ -24,24 +24,24 @@ In the following configuration file, users can specify platform, data type, kern
 ```sh
 Platform:VCK5000;         #(VCK5000 | VCK190)
 KernelGen:1;              #(0 | 1) scope 1
-	DATA_TYPE:int32;  #(int32 | int16 | fp32)
+	DATA_TYPE:fp32;  #(int32 | int16 | fp32)
 	KRL_TYPE:1;       #(0 | 1)
-	I:32;             #MM with size I*K*J will be calculated in a single AIE
-	K:32;            
-	J:32;
+	I:16;             #MM with size I*K*J will be calculated in a single AIE
+	K:16;            
+	J:16;
 IOGen:0;                  #(0 | 1) scope 2
-	DATA_TYPE:int32;  #(int32 | fp32)
+	DATA_TYPE:fp32;  #(int32 | fp32)
 	A:12;             #BATCH Level patameter A, B, C
 	B:8;              #A*B*C -> Number of AIEs in AIE array
 	C:4;
 SysGen:0;                 #(0 | 1) scope 3
-	DATA_TYPE:int32;  #(int32 | fp32)
+	DATA_TYPE:fp32;  #(int32 | fp32)
 	X:4;              #BLOCK level parameter
 	Y:8;              #X,Y,Z decide the on-chip buffer utilization
 	Z:1;
 	LHS_BUFF:1;       #On-chip buffer implementation option
 	RHS_BUFF:0;      
-	OUT_BUFF:1;     
+	OUT_BUFF:0;     
 AutoGen:1;                #(0 | 1)
 ```
 
@@ -71,7 +71,30 @@ cd SC22_ACAP
 git checkout master
 ```
 **2. Configure ".cfg" file**<br>
-Use pre-defined file in the demo 
+Use pre-defined file config_files/1536_2048_128_200.cfg as input in this demo <br>
+sh```
+Platform:VCK5000;
+KernelGen:1;
+	DATA_TYPE:int32;
+	KRL_TYPE:1;
+	I:32;
+	K:32;
+	J:32;
+IOGen:1;
+	DATA_TYPE:int32;
+	A:12;
+	B:8;
+	C:4;
+SysGen:1;
+	DATA_TYPE:int32;
+	X:4;
+	Y:8;
+	Z:1;
+	LHS_BUFF:1;
+	RHS_BUFF:0;
+	OUT_BUFF:1;
+AutoGen:0;
+```
 
 **3. Code generation by XACG**<br>
 XACG takes ".cfg" as input file. In order to reproduce the experiment results, we prepared all the ".cfg" file of listed int32 experiments on VCK5000 in ./config_files with the name specify their MM size. If not specify input file. Then XACG will take input.cfg as default settting.<br>
