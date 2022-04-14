@@ -20,6 +20,7 @@ In the following configuration file, users can specify platform, data type, kern
 - **A, B, C** refers to the BATCH level parameter.
 - **X, Y, Z** refers to the BLOCK level parameter.
 - **LHS_BUFF, RHS_BUFF, OUT_BUFF** dicide the implmentation option for LHS, RHS and output buffers. 1 refers to URAM and 0 refers to BRAM. For example, LHS_BUFF=1 means LHS buffer is implemented by URAM.
+- **AutoGen** decides whether to automatically run compilation flow after generating the source code. 1 refers to combining XACG and compilation together.
 ```sh
 Platform:VCK5000;         #(VCK5000 | VCK190)
 KernelGen:1;              #(0 | 1) scope 1
@@ -40,7 +41,8 @@ SysGen:0;                 #(0 | 1) scope 3
 	Z:1;
 	LHS_BUFF:1;       #On-chip buffer implementation option
 	RHS_BUFF:0;      
-	OUT_BUFF:1;      
+	OUT_BUFF:1;     
+AutoGen:1;                #(0 | 1)
 ```
 
 ## Experiment Environment<br>
@@ -68,44 +70,43 @@ git clone https://github.com/JinmingZhuang/SC22_ACAP.git
 cd SC22_ACAP
 git checkout master
 ```
-**2. Modify input.cfg file**<br>
+**2. Configure ".cfg" file**<br>
+Use pre-defined file in the demo 
+
+**3. Code generation by XACG**<br>
+XACG takes ".cfg" as input file. In order to reproduce the experiment results, we prepared all the ".cfg" file of listed int32 experiments on VCK5000 in ./config_files with the name specify their MM size. If not specify input file. Then XACG will take input.cfg as default settting.<br>
 ```sh
-Platform:VCK5000;
-KernelGen:1;
-	DATA_TYPE:fp32;
-	KRL_TYPE:1;
-	I:32;
-	K:32;
-	J:32;
-IOGen:1;
-	DATA_TYPE:fp32;
-	A:12;
-	B:8;
-	C:4;
-SysGen:1;
-	DATA_TYPE:fp32;
-	X:4;
-	Y:8;
-	Z:1;
-	LHS_BUFF:1;
-	RHS_BUFF:0;
-	OUT_BUFF:1;
+./AutoGen.sh config_files/1536_2048_128_200.cfg
 ```
-**3. Launch XACG**<br>
+**4. Compilation of Single Kernel, AIE Array and System**<br>
+1. KernelGen leverages AIE compiler as its banckend<br>
 ```sh
-./AutoGen.sh
+cd KernelGen/${PRO_PATH}
+./run_aie.sh
 ```
 
-**4. Run experiment on VCK5000 and see result in log file**<br>
+2. IOGen leverages AIE compiler as its banckend<br>
+```sh
+cd IOGen/${PRO_PATH}
+./run_aie.sh
+```
+
+3. SysGen leverages Vitis and Vivado as its banckend<br>
+```sh
+cd SysGen/${PRO_PATH}
+./run_sys.sh
+```
+
+4. On board execution<br>
+By running the following instructions, user can view throughput and computation result in result.log.
 ```sh
 source /opt/tools/xilinx/Vitis/2021.2/settings64.sh
 source /opt/xilinx/xrt/setup.sh
-cd ${SYS_PRO_PATH}
+cd SysGen/${PRO_PATH}
 ./hostexe mm_hw.xclbin >> result.log
 ```
-
-
-**It takes 6-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TFLOPs**
+**It takes 4-8 hours to go through the whole processes and the expected throughput should be 4.3-4.4 TOPs as shown in the following figure**
+![image](https://user-images.githubusercontent.com/77606152/163298008-bb67c852-861f-4c87-800e-5328b789a3d3.png)<br>
 
 ## Experiment customization<br>
 **1.System level Throuput Experiment**<br>
