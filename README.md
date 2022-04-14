@@ -11,7 +11,7 @@
 
 ![XACG](https://user-images.githubusercontent.com/77606152/163127636-76361ad2-8057-4f91-9211-cfd0b2c13c8b.png)<br>
 
-## Configuration File "input.cfg"
+## Configuration File "./config_files/input.cfg"
 In the following configuration file, users can specify platform, data type, kernel type and mapping strategy of each level. The feasible option of each parameter are illustrated in **( )** The rules of using this configuration file are listed below:
 - **Platform** refers to the hardware platform used in the project. VCK5000 and VCK190 are supported in the current framework.
 - **KernelGen, IOGen, SysGen** decide if the corresponding ACG should be launched (1 refers to launch). According  to the framework overview, the upper level ACGs are based on the lower level ACGs. Thus, lower level ACG parameter should be 1 when launching the upper level ACGs.([KernelGen, IOGen, SysGen]=[1,0,0] | [1,1,0] | [1,1,1]). When launch control parameter=0, the following parameters in its scope won't work thus can be random number.
